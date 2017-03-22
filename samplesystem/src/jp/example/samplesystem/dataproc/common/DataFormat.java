@@ -18,4 +18,6 @@ public @interface DataFormat {
 	int maxLen() default 0;
 	/** 最大長を超えた場合に末尾を削除する */
 	boolean delEnd() default false;
+	/** 日付書式 */
+	String dateFormat() default "";
 }

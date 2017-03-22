@@ -4,6 +4,8 @@
 package jp.example.samplesystem.dataproc.common;
 
 import java.lang.reflect.Field;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 /**
  * データ加工の親クラス
@@ -18,8 +20,9 @@ public abstract class AbstractProc {
 	 * @param bean データオブジェクト
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
+	 * @throws ParseException 
 	 */
-	public void execute(AbstractBean bean) throws IllegalArgumentException, IllegalAccessException {
+	public void execute(AbstractBean bean) throws IllegalArgumentException, IllegalAccessException, ParseException {
 		// フィールドの取得
 		// privateフィールドを取得するのでgetDeclaredFieldを使う
 		Field[] fields = bean.getClass().getDeclaredFields();
@@ -30,9 +33,17 @@ public abstract class AbstractProc {
 			// アノテーションの取得
 			DataFormat format = field.getAnnotation(DataFormat.class);
 			// アノテーションを読み取って処理する
+			String string = (String)field.get(bean);
+			// 末尾を切り捨てる処理
 			if (format.delEnd()) {
-				String string = (String)field.get(bean);
 				string = string == null?"" : string.length() > format.maxLen()?string.substring(0, format.maxLen()) : string;
+				field.set(bean, string);
+			}
+
+			// 日付書式を変換する処理
+			if (!"".equals(format.dateFormat())) {
+				string = new SimpleDateFormat(format.dateFormat()).format(new SimpleDateFormat("yyyyMMdd").parse(string));
+				field.set(bean, string);
 			}
 		}
 		
